@@ -1,0 +1,17 @@
+## Interface: 60100
+## Title: oUF: Bob
+## Author: 10leej
+## Version: 1.1
+## Notes: oUF_!Beatycase'd baconalia
+## Dependencies: oUF
+## OptionalDeps: oUF_SpellRange, oUF_Smooth Update, oUF_Experience, oUF_Reputation, oUF_Trinkets, oUF_MoveableFrames, !Beautycase
+## Credits: Phanx, MoonWitch, Haste, tukz
+
+config.lua
+embeds\oUF_AuraWatch.lua
+embeds\oUF_HolyPowerBar.lua
+embeds\oUF_WarlockSpecBars.lua
+embeds\oUF_RaidDebuffs
+modules\group.lua
+modules\test.lua
+modules\units.lua
