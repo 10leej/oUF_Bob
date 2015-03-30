@@ -168,7 +168,7 @@ local UnitSpecific = {
 								
 			self.WarlockSpecBars = lock
 			
-		else  --All those other classes
+		elseif playerClass == "PRIEST" or playerClass == "PALADIN" then--All those other classes
 			local numIcons = 5
 			local iconSpacing = 5 -- need wider spacing
 			local iconWidth = ((cfg.player.width/5) - (iconSpacing * (numIcons - 1)) / numIcons)
@@ -195,6 +195,8 @@ local UnitSpecific = {
 			end
 
 			self.ClassIcons = ClassIcons
+		else
+			return
 		end
 		----------------------------
 		-- Plugin: oUF_Experience --
