@@ -267,7 +267,7 @@ local UnitSpecific = {
 			-- Register it with oUF
 			self.Reputation = Reputation
 		end
-	end,
+	end, --end player
 	pet = function(self)
 		-- pet specific stuff
 		self:SetSize(cfg.pet.width,cfg.pet.height)

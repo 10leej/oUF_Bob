@@ -4,6 +4,110 @@ local _, playerClass = UnitClass("player")
 local isBeautiful = IsAddOnLoaded("!Beautycase") --!Beautycase check
 
 if not cfg.group.enable then return end
+
+-----------------------------
+-- locals
+-----------------------------
+local indicatorList --Hey guys looks like I finally got something working here!
+--also indicators are based on NeavRaid's indicators if there more you want added to the list let me know please.
+
+-- Class buffs { spell ID, position [, {r, g, b, a}][, anyUnit][, hideCooldown][, hideCount] }
+do
+    indicatorList = {
+        DRUID = {
+            {774, 'BOTTOMRIGHT', {1, 0.2, 1}}, -- Rejuvenation
+            {33763, 'BOTTOM', {0.5, 1, 0.5}, false, false, true}, -- Lifebloom
+            {48438, 'BOTTOMLEFT', {0.7, 1, 0}}, -- Wild Growth
+        },
+        MONK = {
+            {119611, 'BOTTOMRIGHT', {0, 1, 0}}, -- Renewing Mist
+            {124682, 'BOTTOMLEFT', {0.15, 0.98, 0.64}}, -- Enveloping Mist
+            {115175, 'TOPRIGHT', {0.15, 0.98, 0.64}}, -- Soothing Mist
+            {116849, 'TOPLEFT', {1, 1, 0}}, -- Life Cocoon
+            {124081, 'BOTTOMLEFT', {0.7, 0.8, 1}}, -- Zen Sphere
+        },
+        PALADIN = {
+            {53563, 'BOTTOMRIGHT', {0, 1, 0}}, -- Beacon of Light
+            {20925, 'BOTTOMRIGHT', {1, 1, 0}}, -- Sacred Shield
+        },
+        PRIEST = {
+            {6788, 'BOTTOMRIGHT', {0.6, 0, 0}, true}, -- Weakened Soul (hmm not working)
+            {17, 'BOTTOMRIGHT', {1, 1, 0}}, -- Power Word: Shield
+            {33076, 'TOPRIGHT', {1, 0.6, 0.6}, false, true}, -- Prayer of Mending
+            {139, 'BOTTOMLEFT', {0, 1, 0}}, -- Renew
+        },
+        SHAMAN = {
+            {61295, 'TOPLEFT', {0.7, 0.3, 0.7}}, -- Riptide
+            {974, 'BOTTOMRIGHT', {0.7, 0.4, 0}, false, true}, -- Earth Shield
+        },
+        WARLOCK = {
+            {20707, 'BOTTOMRIGHT', {0.7, 0, 1}, true, true}, -- Soulstone
+        },
+        ALL = {
+            {23333, 'TOPLEFT', {1, 0, 0}}, -- Warsong flag, Horde
+            {23335, 'TOPLEFT', {0, 0, 1}}, -- Warsong flag, Alliance 
+        },
+    }
+end
+
+local function AuraIcon(self, icon)
+    if (icon.cd) then
+        icon.cd:SetReverse(true)
+        icon.cd:SetAllPoints(icon.icon)
+        icon.cd:SetHideCountdownNumbers(true)
+    end
+end
+
+local offsets
+do
+    local space = 2
+
+    offsets = {
+        TOPLEFT = {
+            icon = {space, -space},
+            count = {'TOP', icon, 'BOTTOM', 2, -2},
+        },
+
+        TOPRIGHT = {
+            icon = {-space, -space},
+            count = {'TOP', icon, 'BOTTOM', -2, -2},
+        },
+
+        BOTTOMLEFT = {
+            icon = {space, space},
+            count = {'LEFT', icon, 'RIGHT', 2, 2},
+        },
+
+        BOTTOMRIGHT = {
+            icon = {-space, space},
+            count = {'RIGHT', icon, 'LEFT', -2, 2},
+        },
+
+        LEFT = {
+            icon = {space, 0},
+            count = {'LEFT', icon, 'RIGHT', 1, 0},
+        },
+
+        RIGHT = {
+            icon = {-space, 0},
+            count = {'RIGHT', icon, 'LEFT', -1, 0},
+        },
+
+        TOP = {
+            icon = {0, -space},
+            count = {'CENTER', icon, 0, 0},
+        },
+
+        BOTTOM = {
+            icon = {0, space},
+            count = {'CENTER', icon, 0, 0},
+        },
+    }
+end
+
+
+-----------------------------
+-- functions
 -----------------------------
 -- Backdrop function
 local function CreateBackdrop(frame)
@@ -15,18 +119,72 @@ local function CreateBackdrop(frame)
 		frame:SetBeautyBorderPadding(1)
 	end
 end
---Spawn Indicators
-local indicatorPositions = { "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT" }
-local indicatorBackdrop = { bgFile = "Interface\\Buttons\\WHITE8X8" }
-local function UpdateIndicators(self, event, unit)
-    if(unit ~= self.indicators.unit) then return end
-    for i = 1, #indicatorPositions do
-        local position = indicatorPositions[i]
-        local indicator = self.indicators[position]
-        indicator:SetShown(UnitBuff(unit, indicator.aura) ~= nil)
+local function CreateIndicators(self, unit)
+    self.AuraWatch = CreateFrame('Frame', nil, self)
+    self.AuraWatch.presentAlpha = 1
+    self.AuraWatch.missingAlpha = 0
+    self.AuraWatch.hideCooldown = false
+    self.AuraWatch.noCooldownCount = true
+    self.AuraWatch.icons = {}
+    self.AuraWatch.PostCreateIcon = AuraIcon
+
+    local buffs = {}
+
+    if (indicatorList['ALL']) then
+        for key, value in pairs(indicatorList['ALL']) do
+            tinsert(buffs, value)
+        end
+    end
+
+    if (indicatorList[playerClass]) then
+        for key, value in pairs(indicatorList[playerClass]) do
+            tinsert(buffs, value)
+        end
+    end
+
+    if (buffs) then
+        for key, spell in pairs(buffs) do
+            local icon = CreateFrame('Frame', nil, self.AuraWatch)
+            icon:SetWidth(7)
+            icon:SetHeight(7)
+            icon:SetPoint(spell[2], self.Health, unpack(offsets[spell[2]].icon))
+
+            icon.spellID = spell[1]
+            icon.anyUnit = spell[4]
+            icon.hideCooldown = spell[5]
+            icon.hideCount = spell[6]
+
+                -- exception to place PW:S above Weakened Soul
+
+            if (spell[1] == 17) then
+                icon:SetFrameLevel(icon:GetFrameLevel() + 5)
+            end
+
+                -- indicator icon
+
+            icon.icon = icon:CreateTexture(nil, 'OVERLAY')
+            icon.icon:SetAllPoints(icon)
+            icon.icon:SetTexture("Interface\\Buttons\\WHITE8x8")
+
+            if (spell[3]) then
+                icon.icon:SetVertexColor(unpack(spell[3]))
+            else
+                icon.icon:SetVertexColor(0.8, 0.8, 0.8)
+            end
+
+            if (not icon.hideCount) then
+                icon.count = icon:CreateFontString(nil, 'OVERLAY')
+                icon.count:SetShadowColor(0, 0, 0)
+                icon.count:SetShadowOffset(1, -1)
+                icon.count:SetPoint(unpack(offsets[spell[2]].count))
+                icon.count:SetFont(cfg.font, 13)
+            end
+
+            self.AuraWatch.icons[spell[1]] = icon
+        end
     end
 end
-------------------------------------------------------------------------
+------------------------------------------------------------------
 -- Shared settings
 ------------------------------------------------------------------------
 local function Shared(self, unit, isSingle)
@@ -101,16 +259,17 @@ local function Shared(self, unit, isSingle)
 	
 	-----------------------------
 	--Text
+
 	--Name
 	local NameText = Health:CreateFontString(nil, "OVERLAY", "TextStatusBarText") -- parent to last child to make sure it's on top
-	NameText:SetPoint("BOTTOM", Health, "TOP", 0,-12) -- but anchor to the base element so it doesn't wiggle
+	NameText:SetPoint("TOP",Health,0,-5) -- but anchor to the base element so it doesn't wiggle
 	NameText:SetFont(cfg.font, 8, cfg.style)
 	NameText:SetJustifyH("CENTER")
 	self:Tag(NameText, "[name]") -- oUF will automagically update it!
 	Health.text = NameText
 	--Health Percent
 	local HealthText = Health:CreateFontString(nil, "OVERLAY", "TextStatusBarText") -- parent to last child to make sure it's on top
-	HealthText:SetPoint("TOP", Health, "BOTTOM", 0,12) -- but anchor to the base element so it doesn't wiggle
+	HealthText:SetPoint("BOTTOM",Health,0,5) -- but anchor to the base element so it doesn't wiggle
 	HealthText:SetFont(cfg.font, 8, cfg.style)
 	HealthText:SetJustifyH("CENTER")
 	self:Tag(HealthText, "[perhp]") -- oUF will automagically update it!
@@ -138,24 +297,27 @@ local function Shared(self, unit, isSingle)
 	
 	-----------------------------
 	-- Raid Roles
-	-- Position and size
-	local RaidRole = self.Health:CreateTexture(nil, 'OVERLAY')
-	RaidRole:SetSize(16, 16)
-	RaidRole:SetPoint('TOPLEFT')
-   
-	-- Register it with oUF
-	self.RaidRole = RaidRole
+	if cfg.group.LFRRole then
+		-- Position and size
+		local RaidRole = self.Health:CreateTexture(nil, 'OVERLAY')
+		RaidRole:SetSize(16, 16)
+		RaidRole:SetPoint('TOPLEFT')
+	   
+		-- Register it with oUF
+		self.RaidRole = RaidRole
+	end
 	
 	-----------------------------
 	-- LFD Role
-	-- Position and size
-	local LFDRole = self.Health:CreateTexture(nil, "OVERLAY")
-	LFDRole:SetSize(16, 16)
-	LFDRole:SetPoint("TOPLEFT", self.Health)
-   
-	-- Register it with oUF
-	self.LFDRole = LFDRole
-   
+	if cfg.group.LFRRole then
+		-- Position and size
+		local LFDRole = self.Health:CreateTexture(nil, "OVERLAY")
+		LFDRole:SetSize(16, 16)
+		LFDRole:SetPoint("TOPLEFT", self.Health)
+
+		-- Register it with oUF
+		self.LFDRole = LFDRole
+	end
    	------------------------
 	-- Plugin: oUF_Smooth --
 	------------------------
@@ -181,30 +343,6 @@ local function Shared(self, unit, isSingle)
 			outsideAlpha = 0.5,
 		}
 	end
-   	----------------------------
-	-------- Indicaters --------
-	----------------------------
-	if cfg.indicators.enable then
-        local indicators = CreateFrame("Frame", nil ,self)
-        indicators:SetAllPoints(true)
-        indicators:EnableMouse(false)
-        self.indicators = indicators
-        self.indicators.unit = unit
-        -- Build the indicators
-        for i = 1, #indicatorPositions do
-            local position = indicatorPositions[i]
-            local indicator = CreateFrame("Frame", nil, indicators)
-            indicator:Hide()
-            indicator:SetPoint(position)
-            indicator:SetSize(5, 5)
-            indicator:SetBackdrop(indicatorBackdrop)
-            indicator.aura = cfg.indicators["aura"..i]
-            indicators[position] = indicator
-        end
- 
-        -- Register the event on the frame itself
-        self:RegisterEvent("UNIT_AURA", UpdateIndicators)
-    end
 	
     if cfg.group.RaidDeBuff then
         self.RaidDebuffs = CreateFrame('Frame', nil, self)
@@ -234,6 +372,12 @@ local function Shared(self, unit, isSingle)
 
         self.RaidDebuffs.SetDebuffTypeColor = self.RaidDebuffs.SetBackdropColor
     end
+   	-----------------------------
+	-- -Plugin: oUF_AuraWatch ---
+	-----------------------------
+	if IsAddOnLoaded("oUF_AuraWatch") then--oUF_AuraWatch check
+		CreateIndicators(self, unit)
+	end
 end
 
 --Spawn Frames

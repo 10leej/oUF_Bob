@@ -72,7 +72,7 @@ cfg.boss = { --Arena will use the same settings
 --------------------------------------------
 --------------------------------------------
 cfg.group = { --Raid and Party share these settings
-	enable = false, --enable/disable the group frames
+	enable = true, --enable/disable the group frames
 	showSolo = true,
 	position = {'BOTTOMLEFT', ChatFrame1EditBox, "TOPLEFT", 0, 1}, --position for tanks/dps
 	healposition = {'CENTER', UIParent, 0, -275}, --position for healers
@@ -85,71 +85,6 @@ cfg.group = { --Raid and Party share these settings
 	sortmethod = 'INDEX', --'INDEX', 'NAME', 'NAMELIST'
 	growth = 'RIGHT', --'LEFT' or 'RIGHT'
 	groupby = 'GROUP',--nil, 'GROUP', 'CLASS', 'ROLE', 'ASSIGNEDROLE'
-    RaidDeBuff = true,
+	LFRRole = false,
+	RaidDeBuff = true,
 }
-
-cfg.indicators = { --sorted by class not spec
-	enable = true,
-	aura1 =	"Renew", --Top left
-	aura2 =	"Power Word: Shield", --Top Right
-	aura3 =	"Renew", --Bottom Left
-	aura4 =	"Power Word: Shield", --Bottom Right
-}
-
---[[
-	deathknight = {--death knight
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	druid = {--druid
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	hunter = {--hunter
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	mage = {--mage
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	monk = {--monk
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	paladin = {--paladin
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	priest = {--Holy Priest
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	rogue = {--Holy Priest
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	shaman = {--Holy Priest
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	warlock = {--Holy Priest
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-	warrior = {--Holy Priest
-		aura1 =	"Renew", --Top left
-		aura2 =	"Power Word: Shield", --Top Right
-		aura3 =	"Renew", --Bottom Left
-		aura4 =	"Power Word: Shield", --Bottom Right
-]]
