@@ -45,17 +45,19 @@ local UnitSpecific = {
 		
 		-----------------------------
 		-- Position and size
-		local AltPowerBar = CreateFrame('StatusBar', nil, self)
-		AltPowerBar:SetStatusBarTexture(cfg.statusbar_texture)
-		AltPowerBar:SetStatusBarColor(unpack(cfg.AlternatePower.color))
-		AltPowerBar:SetHeight(cfg.AlternatePower.height)
-		AltPowerBar:SetWidth(cfg.AlternatePower.width)
-		AltPowerBar:SetPoint(unpack(cfg.AlternatePower.position))
-		CreateBackdrop(AltPowerBar)
+		local AlternativePower = CreateFrame('StatusBar', nil, self)
+		AlternativePower:SetStatusBarTexture(cfg.statusbar_texture)
+		AlternativePower:SetStatusBarColor(unpack(cfg.AlternatePower.color))
+		AlternativePower:SetHeight(cfg.AlternatePower.height)
+		AlternativePower:SetWidth(cfg.AlternatePower.width)
+		AlternativePower:SetPoint(unpack(cfg.AlternatePower.position))
+		CreateBackdrop(AlternativePower)
 		-- Register with oUF
-		self.AltPowerBar = AltPowerBar
+		self.AlternativePower = AlternativePower
 		
 		--special bars for special classes
+--[[ This part is depreciated since Druids no long use an eclipse bar
+
 		if (playerClass == "DRUID" and GetSpecialization() == 1) then
 			-- Eclipse Bar
 			local EclipseBar = CreateFrame("Frame", nil, self)
@@ -80,7 +82,8 @@ local UnitSpecific = {
 			SolarBar:SetStatusBarTexture(cfg.statusbar_texture)
 			SolarBar:SetStatusBarColor(0.6,0.3,0)
 			EclipseBar.SolarBar = SolarBar
-		elseif playerClass == "DEATHKNIGHT" then
+]]
+		if playerClass == "DEATHKNIGHT" then
 			-- Runes
 			local Runes = {}
 			for index = 1, 6 do
@@ -174,7 +177,7 @@ local UnitSpecific = {
 			local iconWidth = ((cfg.player.width/5) - (iconSpacing * (numIcons - 1)) / numIcons)
 			local iconHeight = (cfg.player.height / 4)
 
-			local ClassIcons = {}
+			local ClassPower = {}
 
 			for index = 1, numIcons do
 				local Icon = CreateFrame("Button", nil, self)
@@ -183,7 +186,7 @@ local UnitSpecific = {
 				Icon:GetNormalTexture():SetAllPoints(true)
 				Icon:SetSize(iconWidth, iconHeight)
 				if index > 1 then
-					Icon:SetPoint("LEFT", ClassIcons[index-1], "RIGHT", iconSpacing, 0)
+					Icon:SetPoint("LEFT", ClassPower[index-1], "RIGHT", iconSpacing, 0)
 				else
 					Icon:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT")
 				end
@@ -191,10 +194,10 @@ local UnitSpecific = {
 					Icon:CreateBeautyBorder(12)
 					Icon:SetBeautyBorderPadding(1)
 				end
-				ClassIcons[index] = Icon
+				ClassPower[index] = Icon
 			end
 
-			self.ClassIcons = ClassIcons
+			self.ClassPower = ClassPower
 		else
 			return
 		end
@@ -435,7 +438,7 @@ local function Shared(self, unit, isSingle)
    healAbsorbBar:SetStatusBarColor(0,1,0)
    
    -- Register with oUF
-   self.HealPrediction = {
+   self.HealthPrediction = {
       myBar = myBar,
       otherBar = otherBar,
       absorbBar = absorbBar,
@@ -588,72 +591,72 @@ local function Shared(self, unit, isSingle)
 	-----------------------------
 	-- Raid icons
 	-- Position and size
-	local RaidIcon = self.Health:CreateTexture(nil, 'OVERLAY')
-	RaidIcon:SetSize(16, 16)
-	RaidIcon:SetPoint('CENTER', self.Health)
+	local RaidTargetIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	RaidTargetIndicator:SetSize(16, 16)
+	RaidTargetIndicator:SetPoint('CENTER', self.Health)
 	
 	-- Register it with oUF
-	self.RaidIcon = RaidIcon
+	self.RaidTargetIndicator = RaidTargetIndicator
 	
 	-----------------------------
 	-- Raid Roles
 	-- Position and size
-	local RaidRole = self.Health:CreateTexture(nil, 'OVERLAY')
-	RaidRole:SetSize(16, 16)
-	RaidRole:SetPoint('TOPLEFT')
+	local RaidRoleIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	RaidRoleIndicator:SetSize(16, 16)
+	RaidRoleIndicator:SetPoint('TOPLEFT')
    
 	-- Register it with oUF
-	self.RaidRole = RaidRole
+	self.RaidRoleIndicator = RaidRoleIndicator
 	
 	-----------------------------
 	-- LFD Role
 	-- Position and size
-	local LFDRole = self.Health:CreateTexture(nil, "OVERLAY")
-	LFDRole:SetSize(16, 16)
-	LFDRole:SetPoint("TOPLEFT", self.Health)
+	local GroupRoleIndicator = self.Health:CreateTexture(nil, "OVERLAY")
+	GroupRoleIndicator:SetSize(16, 16)
+	GroupRoleIndicator:SetPoint("TOPLEFT", self.Health)
    
 	-- Register it with oUF
-	self.LFDRole = LFDRole
+	self.GroupRoleIndicator = GroupRoleIndicator
 	
 	-----------------------------
-	-- Quest Icon
+	-- QuestIndicator Icon
 	-- Position and size
-	local QuestIcon = self.Health:CreateTexture(nil, 'OVERLAY')
-	QuestIcon:SetSize(16, 16)
-	QuestIcon:SetPoint('TOPLEFT', self.Health)
+	local QuestIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	QuestIndicator:SetSize(16, 16)
+	QuestIndicator:SetPoint('TOPLEFT', self.Health)
    
 	-- Register it with oUF
-	self.QuestIcon = QuestIcon
+	self.QuestIndicator = QuestIndicator
 	
 	-----------------------------
 	-- Leader Icon
 	-- Position and size
-	local Leader = self.Health:CreateTexture(nil, "OVERLAY")
-	Leader:SetSize(16, 16)
-	Leader:SetPoint("LEFT", self.Health, "RIGHT")
+	local LeaderIndicator = self.Health:CreateTexture(nil, "OVERLAY")
+	LeaderIndicator:SetSize(16, 16)
+	LeaderIndicator:SetPoint("LEFT", self.Health, "RIGHT")
    
 	-- Register it with oUF
-	self.Leader = Leadera
+	self.LeaderIndicator = LeaderIndicator
 	
 	-----------------------------
 	-- Master looter
 	-- Position and size
-	local MasterLooter = self.Health:CreateTexture(nil, 'OVERLAY')
-	MasterLooter:SetSize(16, 16)
-	MasterLooter:SetPoint('TOP', self.Health)
+	local MasterLooterIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	MasterLooterIndicator:SetSize(16, 16)
+	MasterLooterIndicator:SetPoint('TOP', self.Health)
    
 	-- Register it with oUF
-	self.MasterLooter = MasterLooter
+	self.MasterLooterIndicator = MasterLooterIndicator
 	
 	-----------------------------
 	-- Combat
 	-- Position and size
-	local Combat = self.Health:CreateTexture(nil, "OVERLAY")
-	Combat:SetSize(16, 16)
-	Combat:SetPoint('TOPLEFT', self.Health)
+	local CombatIndicator = self.Health:CreateTexture(nil, "OVERLAY")
+	CombatIndicator:SetSize(16, 16)
+	CombatIndicator:SetPoint('TOPLEFT', self.Health)
    
 	-- Register it with oUF
-	self.Combat = Combat
+	self.CombatIndicator = CombatIndicator
    
    	------------------------
 	-- Plugin: oUF_Smooth --
