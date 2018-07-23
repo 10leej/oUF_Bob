@@ -73,9 +73,9 @@ cfg.boss = { --Arena will use the same settings
 --------------------------------------------
 cfg.group = { --Raid and Party share these settings
 	enable = true, --enable/disable the group frames
-	showSolo = true,
-	position = {'BOTTOMLEFT', ChatFrame1EditBox, "TOPLEFT", 0, 1}, --position for tanks/dps
-	healposition = {'CENTER', UIParent, 0, -275}, --position for healers
+	--showSolo = false, --enabled by default for helping give reference for people
+	position = {'BOTTOMLEFT', UIParent, "TOPLEFT", 0, 0}, --position for tanks/dps
+	healposition = {'CENTER', UIParent, 0, 0}, --position for healers
 	width = 50,
 	height = 45,
 	offsety = 0,
@@ -85,6 +85,6 @@ cfg.group = { --Raid and Party share these settings
 	sortmethod = 'INDEX', --'INDEX', 'NAME', 'NAMELIST'
 	growth = 'RIGHT', --'LEFT' or 'RIGHT'
 	groupby = 'GROUP',--nil, 'GROUP', 'CLASS', 'ROLE', 'ASSIGNEDROLE'
-	LFRRole = false,
+	LFRRole = true,
 	RaidDeBuff = true,
 }
