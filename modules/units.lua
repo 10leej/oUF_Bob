@@ -82,7 +82,7 @@ local UnitSpecific = {
 			SolarBar:SetStatusBarTexture(cfg.statusbar_texture)
 			SolarBar:SetStatusBarColor(0.6,0.3,0)
 			EclipseBar.SolarBar = SolarBar
-]]
+			
 		if playerClass == "DEATHKNIGHT" then
 			-- Runes
 			local Runes = {}
@@ -201,13 +201,14 @@ local UnitSpecific = {
 		else
 			return
 		end
+]]
 		----------------------------
 		-- Plugin: oUF_Experience --
 		----------------------------
 		if IsAddOnLoaded("oUF_Experience") then
 			-- Position and size
 			local Experience = CreateFrame('StatusBar', nil, self)
-			Experience:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4*2-2)
+			Experience:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
 			Experience:SetHeight(cfg.player.height/4)
 			Experience:SetWidth(cfg.player.width)
 			Experience:SetStatusBarTexture(cfg.statusbar_texture)
@@ -227,7 +228,8 @@ local UnitSpecific = {
 			local Value = Experience:CreateFontString(nil, 'OVERLAY')
 			Value:SetAllPoints(Experience)
 			Value:SetFontObject(GameFontHighlight)
-			self:Tag(Value, '[perxp]%')
+			Value:SetFont(cfg.font, cfg.font_size, cfg.style)
+			self:Tag(Value, '[experience:cur] / [experience:max]')
 
 			-- Register it with oUF
 			self.Experience = Experience
@@ -240,9 +242,9 @@ local UnitSpecific = {
 			-- Position and size
 			local Reputation = CreateFrame('StatusBar', nil, self)
 			if IsAddOnLoaded("oUF_Experience") then
-				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4*3-4)
+				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4*2-4)
 			else
-				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4*2-2)
+				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
 			end
 			Reputation:SetHeight(cfg.player.height/4)
 			Reputation:SetWidth(cfg.player.width)
@@ -251,7 +253,14 @@ local UnitSpecific = {
 				Reputation:CreateBeautyBorder(12)
 				Reputation:SetBeautyBorderPadding(1)
 			end
-			
+			Reputation:EnableMouse(true) -- Enable mouse support for tooltips/fading/clicks
+
+			-- Add a texture widget to display reward status
+			local Reward = Reputation:CreateTexture(nil, 'ARTWORK')
+			Reward:SetPoint('RIGHT')
+			Reward:SetSize(15, 18)
+			Reputation.Reward = Reward
+
 			-- Color the bar by current standing
 			Reputation.colorStanding = true
 
@@ -259,18 +268,54 @@ local UnitSpecific = {
 			local Value = Reputation:CreateFontString(nil, 'OVERLAY')
 			Value:SetAllPoints(Reputation)
 			Value:SetFontObject(GameFontHighlight)
-			self:Tag(Value, '[currep] / [maxrep]')
-			
+			Value:SetFont(cfg.font, cfg.font_size, cfg.style)
+			self:Tag(Value, '[reputation:cur] / [reputation:max]')
+
 			-- Add a background
-			local bg = Reputation:CreateTexture(nil, 'BACKGROUND')
-			bg:SetAllPoints(Reputation)
-			bg:SetTexture(cfg.statusbar_texture)
-			bg:SetVertexColor(unpack(cfg.bColor))
+			CreateBackdrop(Reputation)
 
 			-- Register it with oUF
 			self.Reputation = Reputation
 		end
+
+--[[ Disabled until this is relevant again, this is merely test code
+		----------------------------
+		-- Plugin: oUF_Reputation --
+		----------------------------
+		if IsAddOnLoaded("oUF_ArtifactPower") then
+			-- Position and size
+			local ArtifactPower = CreateFrame('StatusBar', nil, self)
+			ArtifactPower:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
+			ArtifactPower:SetHeight(cfg.player.height/4)
+			ArtifactPower:SetWidth(cfg.player.width)
+			ArtifactPower:SetStatusBarTexture(cfg.statusbar_texture)
+
+			-- Enable the tooltip
+			ArtifactPower:EnableMouse(true)
+
+			-- Enable fading
+			ArtifactPower.offAlpha = 0
+
+			-- Add status bar text
+			local text = ArtifactPower:CreateFontString(nil, "OVERLAY")
+			text:SetPoint("CENTER")
+			text:SetFontObject(GameFontHighlight)
+			ArtifactPower.text = text
+
+			-- Update the status bar text
+			ArtifactPower.PostUpdate = function(self, event, isShown)
+				if (not isShown) then return end
+
+				-- unspent power / missing power for next trait
+				self.text:SetFormattedText("%d / %d", self.totalPower, self.powerForNextTrait - self.power)
+			end
+
+			-- Register with oUF
+			self.ArtifactPower = ArtifactPower
+		end
+]]
 	end, --end player
+	
 	pet = function(self)
 		-- pet specific stuff
 		self:SetSize(cfg.pet.width,cfg.pet.height)
@@ -345,19 +390,6 @@ local UnitSpecific = {
 		self.Castbar:SetSize(cfg.boss.width, cfg.boss.height/4)
 		self.Castbar:SetPoint("TOP",self.Power,"BOTTOM",0,-2)
 		self.Auras:Hide()
-		----------------------------
-		-- Plugin: oUF_Trinkets --
-		----------------------------
-		if IsAddOnLoaded("oUF_Trinkets") then
-			if (unit and unit:find('arena%d') and (not unit:find("arena%dtarget")) and (not unit:find("arena%dpet"))) then
-				self.Trinket = CreateFrame("Frame", nil, self)
-				self.Trinket:SetHeight(cfg.boss.height/4)
-				self.Trinket:SetWidth(cfg.boss.width)
-				self.Trinket:SetPoint("TOP",self.Power,"BOTTOM", 0, -cfg.boss.height/4 * 2)
-				self.Trinket.trinketUseAnnounce = true
-				self.Trinket.trinketUpAnnounce = true
-			end
-		end
 	end
 }
 UnitSpecific.arena = UnitSpecific.boss  -- arena is equal to boss
@@ -397,45 +429,6 @@ local function Shared(self, unit, isSingle)
 	-- Register it with oUF
 	self.Health = Health
 	self.Health.bg = Healthbg
-	
-	-----------------------------
-	--Heal Prediction
-   -- Position and size
-   local myBar = CreateFrame('StatusBar', nil, self.Health)
-   myBar:SetFrameStrata("BACKGROUND")
-   myBar:SetPoint('TOP')
-   myBar:SetPoint('BOTTOM')
-   myBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-   myBar:SetWidth(self.Health:GetWidth())
-   myBar:SetStatusBarTexture(cfg.statusbar_texture)
-   myBar:SetStatusBarColor(0,1,0)
-   
-   local otherBar = CreateFrame('StatusBar', nil, self.Health)
-   otherBar:SetFrameStrata("BACKGROUND")
-   otherBar:SetPoint('TOP')
-   otherBar:SetPoint('BOTTOM')
-   otherBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-   otherBar:SetWidth(self.Health:GetWidth())
-   otherBar:SetStatusBarTexture(cfg.statusbar_texture)
-   otherBar:SetStatusBarColor(0,1,0)
-
-   local absorbBar = CreateFrame('StatusBar', nil, self.Health)
-   absorbBar:SetFrameStrata("BACKGROUND")
-   absorbBar:SetPoint('TOP')
-   absorbBar:SetPoint('BOTTOM')
-   absorbBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-   absorbBar:SetWidth(self.Health:GetWidth())
-   absorbBar:SetStatusBarTexture(cfg.statusbar_texture)
-   absorbBar:SetStatusBarColor(1,1,1)
-
-   local healAbsorbBar = CreateFrame('StatusBar', nil, self.Health)
-   healAbsorbBar:SetFrameStrata("BACKGROUND")
-   healAbsorbBar:SetPoint('TOP')
-   healAbsorbBar:SetPoint('BOTTOM')
-   healAbsorbBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-   healAbsorbBar:SetWidth(self.Health:GetWidth())
-   healAbsorbBar:SetStatusBarTexture(cfg.statusbar_texture)
-   healAbsorbBar:SetStatusBarColor(0,1,0)
    
    -- Register with oUF
    self.HealthPrediction = {
@@ -515,17 +508,9 @@ local function Shared(self, unit, isSingle)
 	local Castbar = CreateFrame("StatusBar", nil, self)
 	Castbar:SetStatusBarTexture(cfg.statusbar_texture)
 	Castbar:SetStatusBarColor(unpack(cfg.castbar_color))
-	if isBeautiful then
-		Castbar:CreateBeautyBorder(12)
-		Castbar:SetBeautyBorderPadding(1)
-	end
-	
+
 	-- Add a background
-	local Background = Castbar:CreateTexture(nil, 'BACKGROUND')
-	Background:SetTexture(cfg.statusbar_texture)
-	Background:SetAllPoints(Castbar)
-	Background:SetTexture(0, 0, 0, .5)
-   
+	CreateBackdrop(Castbar)
 	-- Add a spark
 	local Spark = Castbar:CreateTexture(nil, "OVERLAY")
 	Spark:SetSize(20, 10)
@@ -629,35 +614,19 @@ local function Shared(self, unit, isSingle)
 	self.QuestIndicator = QuestIndicator
 	
 	-----------------------------
-	-- Leader Icon
-	-- Position and size
-	local LeaderIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-	LeaderIndicator:SetSize(16, 16)
-	LeaderIndicator:SetPoint("LEFT", self.Health, "RIGHT")
-   
-	-- Register it with oUF
-	self.LeaderIndicator = LeaderIndicator
+    -- Position and size
+    local PvPIndicator = self.Portrait:CreateTexture(nil, "OVERLAY")
+    PvPIndicator:SetSize(30, 32)
+    PvPIndicator:SetPoint('TOPLEFT', self.Portrait, -10, 10)
+
+    local Badge = self.Portrait:CreateTexture(nil, "OVERLAY")
+    Badge:SetSize(30, 32)
+    Badge:SetPoint('CENTER', PvPIndicator, 'CENTER')
+
+    -- Register it with oUF
+    PvPIndicator.Badge = Badge
+    self.PvPIndicator = PvPIndicator
 	
-	-----------------------------
-	-- Master looter
-	-- Position and size
-	local MasterLooterIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
-	MasterLooterIndicator:SetSize(16, 16)
-	MasterLooterIndicator:SetPoint('TOP', self.Health)
-   
-	-- Register it with oUF
-	self.MasterLooterIndicator = MasterLooterIndicator
-	
-	-----------------------------
-	-- Combat
-	-- Position and size
-	local CombatIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-	CombatIndicator:SetSize(16, 16)
-	CombatIndicator:SetPoint('TOPLEFT', self.Health)
-   
-	-- Register it with oUF
-	self.CombatIndicator = CombatIndicator
-   
    	------------------------
 	-- Plugin: oUF_Smooth --
 	------------------------
@@ -667,7 +636,7 @@ local function Shared(self, unit, isSingle)
 			self.Power.Smooth = true
 		end
 	end
-   
+	
    	----------------------------
 	-- Plugin: oUF_SpellRange --
 	----------------------------
