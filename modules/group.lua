@@ -8,7 +8,7 @@ if not cfg.group.enable then return end
 -----------------------------
 -- functions
 -----------------------------
--- Backdrop function
+-- Backdrop function, this is also how we cheese borders on things
 local function CreateBackdrop(frame)
     frame:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8",
         insets = {top = 1, left = 1, bottom = 1, right = 1}})
@@ -41,6 +41,7 @@ local function Shared(self, unit, isSingle)
 	Health:SetPoint('LEFT')
 	Health:SetPoint('RIGHT')
 	Health:SetHeight(cfg.group.height)
+	--Health:CreateBeautyBorder(12)
 	CreateBackdrop(Health)
 	-- Options
 	Health.frequentUpdates = true
@@ -51,46 +52,6 @@ local function Shared(self, unit, isSingle)
 	Health.colorHealth = true
 	-- Register it with oUF
 	self.Health = Health
-	
-	-----------------------------
-	--Heal Prediction
-	-- Position and size
-	local myBar = CreateFrame('StatusBar', nil, self.Health)
-	myBar:SetFrameStrata("BACKGROUND")
-	myBar:SetPoint('TOP')
-	myBar:SetPoint('BOTTOM')
-	myBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-	myBar:SetWidth(cfg.group.width)
-	myBar:SetStatusBarTexture(cfg.statusbar_texture)
-	myBar:SetStatusBarColor(0,1,0)
-   
-	local otherBar = CreateFrame('StatusBar', nil, self.Health)
-	otherBar:SetFrameStrata("BACKGROUND")
-	otherBar:SetPoint('TOP')
-	otherBar:SetPoint('BOTTOM')
-	otherBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-	otherBar:SetWidth(cfg.group.width)
-	otherBar:SetStatusBarTexture(cfg.statusbar_texture)
-	otherBar:SetStatusBarColor(0,1,0)
-
-	local healAbsorbBar = CreateFrame('StatusBar', nil, self.Health)
-	healAbsorbBar:SetFrameStrata("BACKGROUND")
-	healAbsorbBar:SetPoint('TOP')
-	healAbsorbBar:SetPoint('BOTTOM')
-	healAbsorbBar:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
-	healAbsorbBar:SetWidth(cfg.group.width)
-	healAbsorbBar:SetStatusBarTexture(cfg.statusbar_texture)
-	healAbsorbBar:SetStatusBarColor(0,1,0)
-   
-   -- Register with oUF
-   self.HealPrediction = {
-      myBar = myBar,
-      otherBar = otherBar,
-      absorbBar = absorbBar,
-      healAbsorbBar = healAbsorbBar,
-      maxOverflow = 1.05,
-      frequentUpdates = true,
-   }
 	
 	-----------------------------
 	--Text
@@ -123,24 +84,32 @@ local function Shared(self, unit, isSingle)
 	-----------------------------
 	-- Raid icons
 	-- Position and size
-	local RaidIcon = self.Health:CreateTexture(nil, 'OVERLAY')
-	RaidIcon:SetSize(16, 16)
-	RaidIcon:SetPoint('CENTER', self.Health)
+	local RaidTargetIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	RaidTargetIndicator:SetSize(16, 16)
+	RaidTargetIndicator:SetPoint('CENTER', self.Health)
 	
 	-- Register it with oUF
-	self.RaidIcon = RaidIcon
+	self.RaidTargetIndicator = RaidTargetIndicator
 	
 	-----------------------------
 	-- Raid Roles
-	if cfg.group.LFRRole then
-		-- Position and size
-		local RaidRole = self.Health:CreateTexture(nil, 'OVERLAY')
-		RaidRole:SetSize(16, 16)
-		RaidRole:SetPoint('TOPLEFT')
-	   
-		-- Register it with oUF
-		self.RaidRole = RaidRole
-	end
+	-- Position and size
+	local RaidRoleIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
+	RaidRoleIndicator:SetSize(12, 12)
+	RaidRoleIndicator:SetPoint('TOPLEFT')
+   
+	-- Register it with oUF
+	self.RaidRoleIndicator = RaidRoleIndicator
+	
+	-----------------------------
+	-- LFD Role
+	-- Position and size
+	local GroupRoleIndicator = self.Health:CreateTexture(nil, "OVERLAY")
+	GroupRoleIndicator:SetSize(12, 12)
+	GroupRoleIndicator:SetPoint("TOPLEFT", self.Health)
+   
+	-- Register it with oUF
+	self.GroupRoleIndicator = GroupRoleIndicator
 	
 	-----------------------------
 	-- LFD Role
@@ -217,7 +186,7 @@ oUF:Factory(function(self)
 		'showParty', true,
 		'showPlayer', true,
 		'showRaid', true,
-		--'showSolo', cfg.group.showSolo,
+		'showSolo', cfg.group.showSolo,
 		'yOffset', cfg.group.offsety,
 		'groupingOrder', "1,2,3,4,5,6,7,8",
 		'maxColumns', cfg.group.columns,
@@ -229,20 +198,27 @@ oUF:Factory(function(self)
 		'point', 'LEFT',
 		'columnAnchorPoint', 'BOTTOM'
 	)
-	--Positions (categorized by spec and class)
-	if (playerClass == "PRIEST" and GetSpecialization() == 1) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	elseif (playerClass == "PRIEST" and GetSpecialization() == 2) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	elseif (playerClass == "PALADIN" and GetSpecialization() == 1) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	elseif (playerClass == "DRUID" and GetSpecialization() == 4) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	elseif (playerClass == "MONK" and GetSpecialization() == 2) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	elseif (playerClass == "SHAMAN" and GetSpecialization() == 3) then
-		party:SetPoint(unpack(cfg.group.healposition))
-	else
-		party:SetPoint(unpack(cfg.group.position))
-	end
+	--Let dynamically update this so when we change spec frames auto move
+	party:SetScript("OnEvent", function(self, event, unit)
+	if event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_SPECIALIZATION_CHANGED" then
+			if (playerClass == "PRIEST" and GetSpecialization() == 1) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			elseif (playerClass == "PRIEST" and GetSpecialization() == 2) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			elseif (playerClass == "PALADIN" and GetSpecialization() == 1) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			elseif (playerClass == "DRUID" and GetSpecialization() == 4) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			elseif (playerClass == "MONK" and GetSpecialization() == 2) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			elseif (playerClass == "SHAMAN" and GetSpecialization() == 3) then
+				party:SetPoint(unpack(cfg.group.healposition))
+			else
+				party:SetPoint(unpack(cfg.group.position))
+			end
+		end
+	end)
+	party:RegisterEvent("PLAYER_TALENT_UPDATE")
+	party:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+	party:RegisterEvent("PLAYER_ENTERING_WORLD")
 end)
