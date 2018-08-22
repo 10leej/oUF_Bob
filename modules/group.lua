@@ -200,25 +200,17 @@ oUF:Factory(function(self)
 	)
 	--Let dynamically update this so when we change spec frames auto move
 	party:SetScript("OnEvent", function(self, event, unit)
-	if event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_SPECIALIZATION_CHANGED" then
-			if (playerClass == "PRIEST" and GetSpecialization() == 1) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			elseif (playerClass == "PRIEST" and GetSpecialization() == 2) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			elseif (playerClass == "PALADIN" and GetSpecialization() == 1) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			elseif (playerClass == "DRUID" and GetSpecialization() == 4) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			elseif (playerClass == "MONK" and GetSpecialization() == 2) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			elseif (playerClass == "SHAMAN" and GetSpecialization() == 3) then
-				party:SetPoint(unpack(cfg.group.healposition))
-			else
-				party:SetPoint(unpack(cfg.group.position))
-			end
+		party:UnregisterEvent(event)
+
+		local function UpdatePosition(party)
+			local _, _, _, _, role = GetSpecializationInfo(GetSpecialization())
+			party:ClearAllPoints()
+			party:SetPoint(unpack(cfg.group[role ~= 'HEALER' and "position" or "healposition"]))
 		end
+		UpdatePosition(party)
+
+		party:SetScript('OnEvent', UpdatePosition)
+		party:RegisterUnitEvent('PLAYER_SPECIALIZATION_CHANGED', 'player')
 	end)
-	party:RegisterEvent("PLAYER_TALENT_UPDATE")
-	party:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-	party:RegisterEvent("PLAYER_ENTERING_WORLD")
+	party:RegisterEvent('PLAYER_ENTERING_WORLD')
 end)
