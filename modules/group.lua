@@ -147,58 +147,41 @@ local function Shared(self, unit, isSingle)
 			outsideAlpha = 0.5,
 		}
 	end
-	
-    if cfg.group.RaidDeBuff then
-        self.RaidDebuffs = CreateFrame('Frame', nil, self)
-        self.RaidDebuffs:SetHeight(18)
-        self.RaidDebuffs:SetWidth(18)
-        self.RaidDebuffs:SetPoint('CENTER', self)
-        self.RaidDebuffs:SetFrameStrata'HIGH'
-
-        self.RaidDebuffs:SetBackdrop(backdrop)
-
-        self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, 'OVERLAY')
-        self.RaidDebuffs.icon:SetTexCoord(.1,.9,.1,.9)
-        self.RaidDebuffs.icon:SetAllPoints(self.RaidDebuffs)
-
-        self.RaidDebuffs.cd = CreateFrame('Cooldown', nil, self.RaidDebuffs)
-        self.RaidDebuffs.cd:SetAllPoints(self.RaidDebuffs)
-
-        self.RaidDebuffs.ShowDispelableDebuff = true
-        self.RaidDebuffs.FilterDispelableDebuff = true
-        self.RaidDebuffs.MatchBySpellName = true
-        self.RaidDebuffs.Debuffs = ns.raid_debuffs
-
-        self.RaidDebuffs.count = self.RaidDebuffs:CreateFontString(nil, 'OVERLAY')
-        self.RaidDebuffs.count:SetFont(STANDARD_TEXT_FONT, 12, 'OUTLINE')
-        self.RaidDebuffs.count:SetPoint('BOTTOMRIGHT', self.RaidDebuffs, 'BOTTOMRIGHT', 2, 0)
-        self.RaidDebuffs.count:SetTextColor(1, .9, 0)
-
-        self.RaidDebuffs.SetDebuffTypeColor = self.RaidDebuffs.SetBackdropColor
-    end
+	----------------------------
+	-- Plugin: oUF_RaidDebuff --
+	----------------------------
+	--[[
+	local dbh = self:CreateTexture(nil, "OVERLAY")
+	dbh:SetAllPoints(self)
+	dbh:SetTexture("cfg.statusbar_texture")
+	dbh:SetBlendMode("ADD")
+	dbh:SetVertexColor(0,0,0,0) -- set alpha to 0 to hide the texture
+	self.DebuffHighlightBackdrop = true
+	self.DebuffHighlight = dbh
+	]]
 end
 
 --Spawn Frames
 oUF:RegisterStyle('BobGroup', Shared)
 oUF:Factory(function(self)
 	self:SetActiveStyle'BobGroup'
-	local party = self:SpawnHeader(nil, nil, 'raid,party',
-		'showParty', true,
-		'showPlayer', true,
-		'showRaid', true,
-		'showSolo', cfg.group.showSolo,
-		'yOffset', cfg.group.offsety,
-		'groupingOrder', "1,2,3,4,5,6,7,8",
-		'maxColumns', cfg.group.columns,
-		'unitsPerColumn', cfg.group.unitpercolumn,
-		'columnAnchorPoint', cfg.group.growth,
-		'sortMethod', cfg.group.sortmethod,
-		'groupBy', cfg.group.groupby,
-		'columnSpacing', cfg.group.offsetx,
-		'point', 'LEFT',
-		'columnAnchorPoint', 'BOTTOM'
+	local party = self:SpawnHeader(nil, nil, 'raid,party,solo',
+       'showRaid', true,
+        'showSolo', false,
+        'showPlayer', true,
+        'showParty', true,
+        'yOffset', -1,
+        'groupFilter', '1,2,3,4,5,6,7,8',
+        'groupBy', cfg.group.groupBy,
+        'groupingOrder', cfg.group.groupingOrder,
+        'maxColumns', cfg.group.maxColumns,
+        'unitsPerColumn', cfg.group.unitsPerColumn,
+        'columnSpacing', 1,
+        'point', cfg.group.point,
+        'startingIndex',1,
+        'columnAnchorPoint', cfg.group.columnAnchor
 	)
-	--Let dynamically update this so when we change spec frames auto move
+
 	party:SetScript("OnEvent", function(self, event, unit)
 		party:UnregisterEvent(event)
 

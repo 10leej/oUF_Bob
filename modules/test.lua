@@ -1,6 +1,7 @@
 local _, cfg = ... --import config
 local addon, ns = ... --get addon namespace
 
+--[[
 --Frame testing
 local groups = { -- Change these to the global names your layout will make.
 	arena = { "oUF_BobArena1", "oUF_BobArena2", "oUF_BobArena3", "oUF_BobArena4", "oUF_BobArena5"},
@@ -20,15 +21,20 @@ local function toggle(f)
 		f:Show()
 	end
 end
-
+]]
+--[[
 SLASH_OUFTEST1 = "/otest"
 SlashCmdList.OUFTEST = function(group)
 	local frames = groups[strlower(strtrim(group))]
 	if not frames then return end
 	for i = 1, #frames do
 		local frame = _G[frames[i]]
+		
+		--[[ --for some reason we have to cut this out too
+		
 		if frame then
 			toggle(frame)
 		end
 	end
 end
+]]

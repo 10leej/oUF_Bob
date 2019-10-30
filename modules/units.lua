@@ -3,7 +3,8 @@ local _, ns = ... --get addon namespace
 local _, playerClass = UnitClass("player")
 local isBeautiful = IsAddOnLoaded("!Beautycase") --!Beautycase check
 -----------------------------
--- Add custom functions (overrides)
+-- Add custom functions
+-----------------------------
 local function CreateBackdrop(frame)
     frame:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8",
         insets = {top = 0, left = 0, bottom = 0, right = 0}})
@@ -15,9 +16,62 @@ local function CreateBackdrop(frame)
 end
 local function Aura_PostCreateIcon(element, button)
 	if isBeautiful then
-		button:CreateBeautyBorder(12) --skin it
+		button:CreateBeautyBorder(10) --skin it
 	else
 		return
+	end
+end
+
+local function PostUpdateClassPower(element, cur, max, diff, powerType)
+	if(diff) then
+		for index = 1, max do
+			local Bar = element[index]
+			if(max == 3) then
+				Bar:SetWidth(cfg.player.width/3)
+			elseif(max == 4) then
+				Bar:SetWidth(index > 2 and cfg.player.width/4 or cfg.player.width/4)
+			elseif(max == 5 or max == 10) then
+				Bar:SetWidth((index == 1 or index == 6) and cfg.player.width/5 or cfg.player.width/5)
+			elseif(max == 6) then
+				Bar:SetWidth(cfg.player.width/6)
+			end
+			if(max == 10) then
+				-- Rogue anticipation talent, align >5 on top of the first 5
+				if(index == 6) then
+					Bar:ClearAllPoints()
+					Bar:SetPoint('LEFT', element[index - 5])
+				end
+			else
+				if(index > 1) then
+					Bar:ClearAllPoints()
+					Bar:SetPoint('LEFT', element[index - 1], 'RIGHT', 0, 0)
+				end
+			end
+		end
+	end
+end
+
+local function UpdateClassPowerColor(element)
+	local r, g, b = 1, 1, 2/5
+	if(not UnitHasVehicleUI('player')) then
+		if(playerClass == 'MONK') then
+			r, g, b = 0, 4/5, 3/5
+		elseif(playerClass == 'WARLOCK') then
+			r, g, b = 2/3, 1/3, 2/3
+		elseif(playerClass == 'PALADIN') then
+			r, g, b = 1, 1, 2/5
+		elseif(playerClass == 'MAGE') then
+			r, g, b = 5/6, 1/2, 5/6
+		end
+	end
+
+	for index = 1, #element do
+		local Bar = element[index]
+		if(playerClass == 'ROGUE' and UnitPowerMax('player', SPELL_POWER_COMBO_POINTS) == 10 and index > 5) then
+			r, g, b = 1, 0, 0
+		end
+
+		Bar:SetStatusBarColor(r, g, b)
 	end
 end
 
@@ -41,174 +95,81 @@ local UnitSpecific = {
 		self.Castbar:SetSize(cfg.player.cast_width, cfg.player.cast_height)
 		self.Castbar:SetPoint(unpack(cfg.player.castbar_pos))
 		
-		self.Auras:Hide()
-		
 		-----------------------------
-		-- Position and size
-		local AlternativePower = CreateFrame('StatusBar', nil, self)
-		AlternativePower:SetStatusBarTexture(cfg.statusbar_texture)
-		AlternativePower:SetStatusBarColor(unpack(cfg.AlternatePower.color))
-		AlternativePower:SetHeight(cfg.AlternatePower.height)
-		AlternativePower:SetWidth(cfg.AlternatePower.width)
-		AlternativePower:SetPoint(unpack(cfg.AlternatePower.position))
-		CreateBackdrop(AlternativePower)
-		-- Register with oUF
-		self.AlternativePower = AlternativePower
-		
-		--special bars for special classes
---[[ This part is depreciated since Druids no long use an eclipse bar
+		-- Auras
+		-----------------------------
+		if cfg.player.auras then
+			local Auras = CreateFrame("Frame", nil, self)
+			Auras:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0,1)
+			Auras:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 0, 1)
+			Auras:SetHeight(cfg.Auras.size)
+			Auras:SetHeight(cfg.Auras.size + cfg.Auras.spacing)
 
-		if (playerClass == "DRUID" and GetSpecialization() == 1) then
-			-- Eclipse Bar
-			local EclipseBar = CreateFrame("Frame", nil, self)
-			EclipseBar:SetPoint("TOP", self.Power, "BOTTOM", 0,0)
-			EclipseBar:SetSize(cfg.player.width, cfg.player.height/4)
-			self.EclipseBar = EclipseBar
-			
-			local LunarBar = CreateFrame("StatusBar", nil, EclipseBar)
-			LunarBar:SetPoint("LEFT")
-			LunarBar:SetSize(cfg.player.width, cfg.player.height/4)
-			LunarBar:SetStatusBarTexture(cfg.statusbar_texture)
-			LunarBar:SetStatusBarColor(0,0,.8)
-			if isBeautiful then
-				LunarBar:CreateBeautyBorder(12)
-				LunarBar:SetBeautyBorderPadding(1)
-			end
-			EclipseBar.LunarBar = LunarBar
-			
-			local SolarBar = CreateFrame("StatusBar", nil, EclipseBar)
-			SolarBar:SetPoint("LEFT", LunarBar:GetStatusBarTexture(), "RIGHT")
-			SolarBar:SetSize(cfg.player.width, cfg.player.height/4)
-			SolarBar:SetStatusBarTexture(cfg.statusbar_texture)
-			SolarBar:SetStatusBarColor(0.6,0.3,0)
-			EclipseBar.SolarBar = SolarBar
-			
-		if playerClass == "DEATHKNIGHT" then
-			-- Runes
-			local Runes = {}
-			for index = 1, 6 do
-				-- Position and size of the rune bar indicators
-				local Rune = CreateFrame('StatusBar', nil, self)
-				Rune:SetSize(cfg.player.width / 6, cfg.player.height/2)
-				Rune:SetPoint('TOPLEFT', self.Power, 'BOTTOMLEFT', index * cfg.player.width / 6 -20, -2)
-				if isBeautiful then
-					Rune:CreateBeautyBorder(10)
-					Rune:SetBeautyBorderPadding(1)
-				end
-				Rune:SetStatusBarTexture(cfg.statusbar_texture)
-				Rune:SetOrientation("VERTICAL")
-				CreateBackdrop(Rune)
+			Auras.size = cfg.Auras.size
+			Auras.onlyShowPlayer = cfg.Auras.onlyShowPlayer
+			Auras.gap = cfg.Auras.gap
+			Auras.spacing = cfg.Auras.spacing
+			Auras.showStealableAuras = cfg.Auras.showStealableAuras
+			Auras.disableCooldown = cfg.Auras.disableCooldown
+			Auras.num = cfg.Auras.number
 
-				Runes[index] = Rune
-			end
-			-- Register with oUF
-			self.Runes = Runes
-		elseif playerClass == "SHAMAN" then
-			-- Totems
-			local Totems = {}
-			for index = 1, MAX_TOTEMS do
-				-- Position and size of the totem indicator
-				local Totem = CreateFrame('Button', nil, self)
-				Totem:SetSize(30, 30)
-				Totem:SetPoint('TOPLEFT', self.Power, 'BOTTOMLEFT', index * Totem:GetWidth() - 30, -2)
-				if isBeautiful then
-					Totem:CreateBeautyBorder(12)
-					Totem:SetBeautyBorderPadding(1)
-				end
-				local Icon = Totem:CreateTexture(nil, "OVERLAY")
-				Icon:SetAllPoints()
-				local Cooldown = CreateFrame("Cooldown", nil, Totem)
-				Cooldown:SetAllPoints()
-				
-				Totem.Icon = Icon
-				Totem.Cooldown = Cooldown
-				Totems[index] = Totem
-			end
-			-- Register with oUF
-			self.Totems = Totems
-		elseif playerClass == "ROGUE" then
-			self.CPoints = {}
-			self.CPoints.unit = PlayerFrame.unit
-			for i = 1, 5 do
-				self.CPoints[i] = self.Health:CreateTexture(nil, "OVERLAY")
-				self.CPoints[i]:SetHeight(cfg.player.height/4 - 2)
-				self.CPoints[i]:SetWidth(cfg.player.width/6)
-				self.CPoints[i]:SetTexture(cfg.statusbar_texture)	
-				if i == 1 then
-					self.CPoints[i]:SetPoint('TOPLEFT', self.Power, 'BOTTOMLEFT', 4, -2)
-					self.CPoints[i]:SetVertexColor(0.69, 0.31, 0.31)
-				else
-					self.CPoints[i]:SetPoint("LEFT", self.CPoints[i-1], "RIGHT", 3, 0)
-				end
-			end
-			self.CPoints[2]:SetVertexColor(0.69, 0.31, 0.31)
-			self.CPoints[3]:SetVertexColor(0.65, 0.63, 0.35)
-			self.CPoints[4]:SetVertexColor(0.65, 0.63, 0.35)
-			self.CPoints[5]:SetVertexColor(0.33, 0.59, 0.33)
-		elseif playerClass == "WARLOCK" then
-			local lock = CreateFrame("Frame", "BobWarlockBar", self)
-			lock:SetPoint("TOP", self.Power, "BOTTOM", 0,0)
-			lock:SetWidth(cfg.player.width)
-			lock:SetHeight(cfg.player.height/4)
-
-			for i = 1, 4 do
-				lock[i] = CreateFrame("StatusBar", "BobWarlockSpecBars"..i, lock)
-				lock[i]:SetHeight(cfg.player.height/4)
-				lock[i]:SetStatusBarTexture(cfg.statusbar_texture)
-				if isBeautiful then
-					lock[i]:CreateBeautyBorder(12)
-					lock[i]:SetBeautyBorderPadding(1)
-				end
-
-				if i == 1 then
-					lock[i]:SetWidth((125 / 4) - 2)
-					lock[i]:SetPoint("LEFT", lock, "LEFT", 0, -2)
-				else
-					lock[i]:SetWidth((125 / 4) - 1)
-					lock[i]:SetPoint("LEFT", lock[i-1], "RIGHT", 1, 0)
-				end
-			end
-								
-			self.WarlockSpecBars = lock
-			
-		elseif playerClass == "PRIEST" or playerClass == "PALADIN" then--All those other classes
-			local numIcons = 5
-			local iconSpacing = 5 -- need wider spacing
-			local iconWidth = ((cfg.player.width/5) - (iconSpacing * (numIcons - 1)) / numIcons)
-			local iconHeight = (cfg.player.height / 4)
-
-			local ClassPower = {}
-
-			for index = 1, numIcons do
-				local Icon = CreateFrame("Button", nil, self)
-				Icon.SetVertexColor = nop
-				Icon:SetNormalTexture(cfg.statusbar_texture)
-				Icon:GetNormalTexture():SetAllPoints(true)
-				Icon:SetSize(iconWidth, iconHeight)
-				if index > 1 then
-					Icon:SetPoint("LEFT", ClassPower[index-1], "RIGHT", iconSpacing, 0)
-				else
-					Icon:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT")
-				end
-				if isBeautiful then -- !Beautycase load check
-					Icon:CreateBeautyBorder(12)
-					Icon:SetBeautyBorderPadding(1)
-				end
-				ClassPower[index] = Icon
-			end
-
-			self.ClassPower = ClassPower
-		else
-			return
+			Auras.PostCreateIcon = Aura_PostCreateIcon
+			self.Auras = Auras
 		end
-]]
+		
+		----------------------------
+		-- Additional Power
+		----------------------------
+		local AdditionalPower = CreateFrame('StatusBar', nil, self)
+		AdditionalPower:SetStatusBarTexture(cfg.statusbar_texture)
+		AdditionalPower:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
+		-- Add a background
+		local Background = AdditionalPower:CreateTexture(nil, 'BACKGROUND')
+		Background:SetAllPoints(AdditionalPower)
+		Background:SetTexture(1, 1, 1, .5)
+		-- Register it with oUF
+		AdditionalPower.bg = Background
+		self.AdditionalPower = AdditionalPower
+		
+		----------------------------
+		--Class Power
+		----------------------------
+		 --need to investigate this since I want to use combo points, this code was kind janky though
+		local ClassPower = {}
+		ClassPower.UpdateColor = UpdateClassPowerColor
+		ClassPower.PostUpdate = PostUpdateClassPower
+
+		for index = 1, 11 do -- have to create an extra to force __max to be different from UnitPowerMax
+			local Bar = CreateFrame('StatusBar', nil, self)
+			Bar:SetHeight(cfg.player.height/4)
+			Bar:SetStatusBarTexture(cfg.statusbar_texture)
+			CreateBackdrop(Bar)
+
+			if(index > 1) then
+				Bar:SetPoint('BOTTOMLEFT', ClassPower[index - 1], 0, -cfg.player.height/4-2)
+			else
+				Bar:SetPoint('BOTTOMLEFT', self.Power, 0, -cfg.player.height/4-2)
+			end
+
+			if(index > 5) then
+				Bar:SetFrameLevel(Bar:GetFrameLevel() + 1)
+			end
+
+			local Background = Bar:CreateTexture(nil, 'BORDER')
+			Background:SetAllPoints()
+
+			ClassPower[index] = Bar
+		end
+		self.ClassPower = ClassPower
+		
+
 		----------------------------
 		-- Plugin: oUF_Experience --
 		----------------------------
 		if IsAddOnLoaded("oUF_Experience") then
 			-- Position and size
 			local Experience = CreateFrame('StatusBar', nil, self)
-			Experience:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
+			Experience:SetPoint('TOP', self.Health, 0, cfg.player.height/4+2)
 			Experience:SetHeight(cfg.player.height/4)
 			Experience:SetWidth(cfg.player.width)
 			Experience:SetStatusBarTexture(cfg.statusbar_texture)
@@ -242,9 +203,9 @@ local UnitSpecific = {
 			-- Position and size
 			local Reputation = CreateFrame('StatusBar', nil, self)
 			if IsAddOnLoaded("oUF_Experience") then
-				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4*2-4)
+				Reputation:SetPoint('TOP', self.Health, 0, cfg.player.height/4*2+4)
 			else
-				Reputation:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
+				Reputation:SetPoint('TOP', self.Health, 0, cfg.player.height/4+2)
 			end
 			Reputation:SetHeight(cfg.player.height/4)
 			Reputation:SetWidth(cfg.player.width)
@@ -277,43 +238,6 @@ local UnitSpecific = {
 			-- Register it with oUF
 			self.Reputation = Reputation
 		end
-
---[[ Disabled until this is relevant again, this is merely test code
-		----------------------------
-		-- Plugin: oUF_Reputation --
-		----------------------------
-		if IsAddOnLoaded("oUF_ArtifactPower") then
-			-- Position and size
-			local ArtifactPower = CreateFrame('StatusBar', nil, self)
-			ArtifactPower:SetPoint('BOTTOM', self.Power, 0, -cfg.player.height/4-2)
-			ArtifactPower:SetHeight(cfg.player.height/4)
-			ArtifactPower:SetWidth(cfg.player.width)
-			ArtifactPower:SetStatusBarTexture(cfg.statusbar_texture)
-
-			-- Enable the tooltip
-			ArtifactPower:EnableMouse(true)
-
-			-- Enable fading
-			ArtifactPower.offAlpha = 0
-
-			-- Add status bar text
-			local text = ArtifactPower:CreateFontString(nil, "OVERLAY")
-			text:SetPoint("CENTER")
-			text:SetFontObject(GameFontHighlight)
-			ArtifactPower.text = text
-
-			-- Update the status bar text
-			ArtifactPower.PostUpdate = function(self, event, isShown)
-				if (not isShown) then return end
-
-				-- unspent power / missing power for next trait
-				self.text:SetFormattedText("%d / %d", self.totalPower, self.powerForNextTrait - self.power)
-			end
-
-			-- Register with oUF
-			self.ArtifactPower = ArtifactPower
-		end
-]]
 	end, --end player
 	
 	pet = function(self)
@@ -331,7 +255,7 @@ local UnitSpecific = {
 		
 		self.Castbar:SetPoint("TOP",self.Power,"BOTTOM",0,-2)
 		self.Castbar:SetSize(cfg.pet.width, cfg.pet.height/4)
-		self.Auras:Hide()
+		--self.Auras:Hide()
 	end,
 	target = function(self)
 		-- target specific stuff
@@ -348,6 +272,28 @@ local UnitSpecific = {
 		
 		self.Castbar:SetSize(cfg.target.cast_width, cfg.target.cast_height)
 		self.Castbar:SetPoint(unpack(cfg.target.castbar_pos))
+		
+		-----------------------------
+		-- Auras
+		-----------------------------
+		if cfg.target.auras then
+			local Auras = CreateFrame("Frame", nil, self)
+			Auras:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0,1)
+			Auras:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 0, 1)
+			Auras:SetHeight(cfg.Auras.size)
+			Auras:SetHeight(cfg.Auras.size + cfg.Auras.spacing)
+
+			Auras.size = cfg.Auras.size
+			Auras.onlyShowPlayer = cfg.Auras.onlyShowPlayer
+			Auras.gap = cfg.Auras.gap
+			Auras.spacing = cfg.Auras.spacing
+			Auras.showStealableAuras = cfg.Auras.showStealableAuras
+			Auras.disableCooldown = cfg.Auras.disableCooldown
+			Auras.num = cfg.Auras.number
+
+			Auras.PostCreateIcon = Aura_PostCreateIcon
+			self.Auras = Auras
+		end
 	end,
 	targettarget = function(self)
 		-- target specific stuff
@@ -358,39 +304,6 @@ local UnitSpecific = {
 		
 		self.Castbar:Hide()
 	end,
-	focus = function(self)
-		-- focus specific stuff
-		self:SetSize(cfg.focus.width,cfg.focus.height)
-		
-		if not cfg.focus.portrait then
-			self.Portrait:SetAlpha(0)
-		end
-		self.Health:SetHeight(cfg.focus.height/2)
-		self.Power:SetHeight(cfg.focus.height/4)
-		
-		self.Portrait:SetPoint('TOPRIGHT', self.Health, 'TOPLEFT', -2,0)
-		self.Portrait:SetSize(cfg.focus.height+4, cfg.focus.height+4)
-		
-		self.Castbar:SetSize(cfg.focus.width, cfg.focus.height/4)
-		self.Castbar:SetPoint("TOP",self.Power,"BOTTOM",0,-2)
-	end,
-	boss = function(self)
-		-- boss specific stuff
-		self:SetSize(cfg.boss.width,cfg.boss.height)
-		
-		if not cfg.boss.portrait then
-			self.Portrait:SetAlpha(0)
-		end
-		self.Health:SetHeight(cfg.boss.height/2)
-		self.Power:SetHeight(cfg.boss.height/4)
-		
-		self.Portrait:SetPoint('TOPLEFT', self.Health, 'TOPRIGHT', 2,0)
-		self.Portrait:SetSize(cfg.boss.height+4, cfg.boss.height+4)
-		
-		self.Castbar:SetSize(cfg.boss.width, cfg.boss.height/4)
-		self.Castbar:SetPoint("TOP",self.Power,"BOTTOM",0,-2)
-		self.Auras:Hide()
-	end
 }
 UnitSpecific.arena = UnitSpecific.boss  -- arena is equal to boss
 
@@ -405,7 +318,7 @@ local function Shared(self, unit, isSingle)
 
 	self:RegisterForClicks'AnyUp'
 
- 
+	-----------------------------
 	-- shared functions
 	-----------------------------
 	-- Health
@@ -543,25 +456,6 @@ local function Shared(self, unit, isSingle)
 	self.Castbar.Time = Time
 	self.Castbar.Text = Text
 	self.Castbar.SafeZone = SafeZone
-	
-	-----------------------------
-	-- Auras
-	local Auras = CreateFrame("Frame", nil, self)
-	Auras:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0,1)
-	Auras:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 0, 1)
-	Auras:SetHeight(cfg.Auras.size)
-	Auras:SetHeight(cfg.Auras.size + cfg.Auras.spacing)
-
-	Auras.size = cfg.Auras.size
-	Auras.onlyShowPlayer = cfg.Auras.onlyShowPlayer
-	Auras.gap = cfg.Auras.gap
-	Auras.spacing = cfg.Auras.spacing
-	Auras.showStealableAuras = cfg.Auras.showStealableAuras
-	Auras.disableCooldown = cfg.Auras.disableCooldown
-	Auras.num = cfg.Auras.number
-
-	Auras.PostCreateIcon = Aura_PostCreateIcon
-	self.Auras = Auras
 
 	-----------------------------
 	-- Rez Icon
@@ -583,50 +477,6 @@ local function Shared(self, unit, isSingle)
 	-- Register it with oUF
 	self.RaidTargetIndicator = RaidTargetIndicator
 	
-	-----------------------------
-	-- Raid Roles
-	-- Position and size
-	local RaidRoleIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
-	RaidRoleIndicator:SetSize(16, 16)
-	RaidRoleIndicator:SetPoint('TOPLEFT')
-   
-	-- Register it with oUF
-	self.RaidRoleIndicator = RaidRoleIndicator
-	
-	-----------------------------
-	-- LFD Role
-	-- Position and size
-	local GroupRoleIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-	GroupRoleIndicator:SetSize(16, 16)
-	GroupRoleIndicator:SetPoint("TOPLEFT", self.Health)
-   
-	-- Register it with oUF
-	self.GroupRoleIndicator = GroupRoleIndicator
-	
-	-----------------------------
-	-- QuestIndicator Icon
-	-- Position and size
-	local QuestIndicator = self.Health:CreateTexture(nil, 'OVERLAY')
-	QuestIndicator:SetSize(16, 16)
-	QuestIndicator:SetPoint('TOPLEFT', self.Health)
-   
-	-- Register it with oUF
-	self.QuestIndicator = QuestIndicator
-	
-	-----------------------------
-    -- Position and size
-    local PvPIndicator = self.Portrait:CreateTexture(nil, "OVERLAY")
-    PvPIndicator:SetSize(30, 32)
-    PvPIndicator:SetPoint('TOPLEFT', self.Portrait, -10, 10)
-
-    local Badge = self.Portrait:CreateTexture(nil, "OVERLAY")
-    Badge:SetSize(30, 32)
-    Badge:SetPoint('CENTER', PvPIndicator, 'CENTER')
-
-    -- Register it with oUF
-    PvPIndicator.Badge = Badge
-    self.PvPIndicator = PvPIndicator
-	
    	------------------------
 	-- Plugin: oUF_Smooth --
 	------------------------
@@ -636,23 +486,8 @@ local function Shared(self, unit, isSingle)
 			self.Power.Smooth = true
 		end
 	end
-	
-   	----------------------------
-	-- Plugin: oUF_SpellRange --
-	----------------------------
-	if IsAddOnLoaded("oUF_SpellRange") then
-		self.SpellRange = {
-			insideAlpha = 1,
-			outsideAlpha = 0.5,
-		}
-	--Range
-	elseif unit == "pet" or unit == "party" or unit == "partypet" then
-		self.Range = {
-			insideAlpha = 1,
-			outsideAlpha = 0.5,
-		}
-	end
-	-- leave this in!!
+
+	-- End of plugins, lets apply style to all frames not listed before this part
 	if(UnitSpecific[unit]) then
 		return UnitSpecific[unit](self)
 	end
@@ -666,21 +501,4 @@ oUF:Factory(function(self)
 	self:Spawn('pet'):SetPoint(unpack(cfg.pet.position))
 	self:Spawn('target'):SetPoint(unpack(cfg.target.position))
 	self:Spawn('targettarget'):SetPoint(unpack(cfg.tot.position))
-	self:Spawn('focus'):SetPoint(unpack(cfg.focus.position))
-	for index = 1, MAX_BOSS_FRAMES do
-		local boss = self:Spawn('boss' .. index)
-		if(index == 1) then
-			boss:SetPoint(unpack(cfg.boss.position))
-		else
-			boss:SetPoint('TOP', _G['oUF_Boss' .. index - 1], 'BOTTOM', 0, -20)
-		end
-	end
-	for index = 1, 5 do
-		local arena = self:Spawn('arena' .. index)
-		if(index == 1) then
-			arena:SetPoint(unpack(cfg.boss.position))
-		else
-			arena:SetPoint('TOP', _G['oUF_BobArena' .. index - 1], 'BOTTOM', 0, -20)
-		end
-	end
 end)
