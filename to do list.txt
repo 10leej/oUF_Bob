@@ -1,0 +1,8 @@
+2. Add threat/target highlighting
+3. Add debuffs to group frames
+4. Add relevant plugin support that actually works fairly well
+5. Figure out why /otest doesn't work (I don't particularly care much about it)
+6. Figure out a border for when !Beautycase isn't enabled
+
+X. Eternaly test
+X. Delete this file when addon declared stable

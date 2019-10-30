@@ -1,13 +1,14 @@
 ## Interface: 80000
 ## Title: oUF: Bob
 ## Author: 10leej
-## Version: 2.0
-## Notes: Efficient boring looking unitframes
+## Version: 1.2
+## Notes: Fairly standard unitframes
 ## Dependencies: oUF
-## OptionalDeps:  !Beautycase, oUF_SpellRange, oUF_Smooth Update, oUF_Experience, oUF_Reputation, oUF_Trinkets, oUF_MoveableFrames, oUF_AuraWatch
+## OptionalDeps: !Beautycase, oUF_SpellRange, oUF_Smooth Update, oUF_Experience, oUF_Reputation
 ## Credits: Phanx, MoonWitch, Haste, tukz
 
 config.lua
+embeds\oUF_RaidDebuffs.lua
 modules\group.lua
 modules\test.lua
 modules\units.lua
