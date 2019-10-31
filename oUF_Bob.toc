@@ -4,7 +4,7 @@
 ## Version: 1.2
 ## Notes: Fairly standard unitframes
 ## Dependencies: oUF
-## OptionalDeps: !Beautycase, oUF_SpellRange, oUF_Smooth Update, oUF_Experience, oUF_Reputation
+## OptionalDeps: !Beautycase
 ## Credits: Phanx, MoonWitch, Haste, tukz
 
 config.lua

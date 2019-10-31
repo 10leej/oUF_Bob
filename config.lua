@@ -8,7 +8,7 @@ cfg.style = 'THINOUTLINE' 	--'OUTLINE', 'THINOUTLINE', 'MONOCHROME', or nil
 cfg.font_size = 12
 
 cfg.castbar_color = { 255/255, 255/255, 0/255 } --Color the castbars
-cfg.bColor = { 0, 0, 0, 0.5 } --This adjusts the backround color/alpha
+cfg.bColor = { 0, 0, 0, .5 } --This adjusts the backround color/alpha
 
 cfg.Auras = {
 	onlyShowPlayer = true, --show only auras player has applied
