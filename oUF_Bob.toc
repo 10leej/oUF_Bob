@@ -8,7 +8,10 @@
 ## Credits: Phanx, MoonWitch, Haste, tukz
 
 config.lua
-embeds\oUF_RaidDebuffs.lua
+embeds\oUF_DruidMana.lua
+embeds\oUF_PetHappiness.lua
+embeds\oUF_SpellRange.lua
+embeds\oUF_Swing.lua
 modules\group.lua
 modules\test.lua
 modules\units.lua
