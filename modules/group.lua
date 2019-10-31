@@ -101,27 +101,6 @@ local function Shared(self, unit, isSingle)
 	-- Register it with oUF
 	self.RaidRoleIndicator = RaidRoleIndicator
 	
-	-----------------------------
-	-- LFD Role
-	-- Position and size
-	local GroupRoleIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-	GroupRoleIndicator:SetSize(12, 12)
-	GroupRoleIndicator:SetPoint("TOPLEFT", self.Health)
-   
-	-- Register it with oUF
-	self.GroupRoleIndicator = GroupRoleIndicator
-	
-	-----------------------------
-	-- LFD Role
-	if cfg.group.LFRRole then
-		-- Position and size
-		local LFDRole = self.Health:CreateTexture(nil, "OVERLAY")
-		LFDRole:SetSize(16, 16)
-		LFDRole:SetPoint("TOPLEFT", self.Health)
-
-		-- Register it with oUF
-		self.LFDRole = LFDRole
-	end
    	------------------------
 	-- Plugin: oUF_Smooth --
 	------------------------
@@ -184,16 +163,12 @@ oUF:Factory(function(self)
 
 	party:SetScript("OnEvent", function(self, event, unit)
 		party:UnregisterEvent(event)
-
 		local function UpdatePosition(party)
-			local _, _, _, _, role = GetSpecializationInfo(GetSpecialization())
 			party:ClearAllPoints()
-			party:SetPoint(unpack(cfg.group[role ~= 'HEALER' and "position" or "healposition"]))
+			party:SetPoint(unpack(cfg.group.position))
 		end
 		UpdatePosition(party)
-
 		party:SetScript('OnEvent', UpdatePosition)
-		party:RegisterUnitEvent('PLAYER_SPECIALIZATION_CHANGED', 'player')
 	end)
 	party:RegisterEvent('PLAYER_ENTERING_WORLD')
 end)

@@ -8,7 +8,7 @@ cfg.style = 'THINOUTLINE' 	--'OUTLINE', 'THINOUTLINE', 'MONOCHROME', or nil
 cfg.font_size = 12
 
 cfg.castbar_color = { 255/255, 255/255, 0/255 } --Color the castbars
-cfg.bColor = { 0, 0, 0, .75 } --This adjusts the backround color/alpha
+cfg.bColor = { 0, 0, 0, 0.5 } --This adjusts the backround color/alpha
 
 cfg.Auras = {
 	onlyShowPlayer = true, --show only auras player has applied
@@ -28,7 +28,7 @@ cfg.player = {
 	cast_width = 125,
 	cast_height = 15,
 	portrait = true,
-	auras = false,
+	auras = true,
 }
 cfg.pet = {
 	position = { 'CENTER', -200, -270 },
@@ -53,12 +53,10 @@ cfg.tot = {  --Target of Target
 }
 --------------------------------------------
 --------------------------------------------
-
---Need to investigate these sometime
+--Need to investigate these sometime, I do believe it is functional though
 cfg.group = { --Raid and Party share these settings
 	enable = true, --enable/disable the group frames
-	position = {'TOPLEFT', nil, 25, 0}, --position for tanks/dps
-	healposition = { 'BOTTOM', 0, 165 }, --position for healers
+	position = {'TOPLEFT', nil, 25, 0}, --position
 	width = 50,
 	height = 45,
 	maxColumns = 8, --Columns are groups of units
