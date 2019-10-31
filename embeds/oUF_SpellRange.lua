@@ -17,7 +17,7 @@ https://github.com/Solor/FreeUI_Classic/blob/cbc3fa05c86707193cddfc9bc0af8bf7452
 ]]
 
 local _, ns = ...
-local oUF = ns.oUF
+local oUF = ns.oUF or oUF
 
 local UpdateRate = 0.1
 
