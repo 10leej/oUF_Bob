@@ -1,6 +1,7 @@
 -------------------------
 -- oUF_Swing, by p3lim
--- NDui MOD -https://github.com/siweia/NDuiClassic/blob/master/Interface/AddOns/NDui/Libs/oUF/Plugins/Swing.lua
+-- This version was updated for NDui by siweia
+-- https://github.com/siweia/NDuiClassic/blob/master/Interface/AddOns/NDui/Libs/oUF/Plugins/Swing.lua
 -------------------------
 local _, ns = ...
 local oUF = ns.oUF or oUF
