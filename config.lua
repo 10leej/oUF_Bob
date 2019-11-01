@@ -22,10 +22,10 @@ cfg.Auras = {
 --unit settings
 cfg.player = {
 	position = { 'CENTER', -200, -200 },
-	width = 125,
+	width = 150,
 	height = 60,
 	castbar_pos = { 'BOTTOM', 0, -3 }, -- alternatively you can use:{ 'CENTER', UIParent, 0, 0 }
-	cast_width = 125,
+	cast_width = 150,
 	cast_height = 15,
 	portrait = true,
 	auras = true,
@@ -38,10 +38,10 @@ cfg.pet = {
 }
 cfg.target = {
 	position = { 'CENTER', 200, -200 },
-	width = 125,
+	width = 150,
 	height = 60,
 	castbar_pos = { 'BOTTOM', 0, -3 },
-	cast_width = 125,
+	cast_width = 150,
 	cast_height = 15,
 	portrait = true,
 	auras = true,
@@ -56,8 +56,8 @@ cfg.tot = {  --Target of Target
 --Need to investigate these sometime, I do believe it is functional though
 cfg.group = { --Raid and Party share these settings
 	enable = true, --enable/disable the group frames
-	position = {'TOPLEFT', nil, 25, 0}, --position
-	width = 50,
+	position = {'TOPLEFT', UIParent, 0, 0}, --position
+	width = 60,
 	height = 45,
 	maxColumns = 8, --Columns are groups of units
 	unitsPerColumn = 5,

@@ -160,9 +160,9 @@ oUF:Factory(function(self)
         'startingIndex',1,
         'columnAnchorPoint', cfg.group.columnAnchor
 	)
-
+--[[
 	party:SetScript("OnEvent", function(self, event, unit)
-		party:UnregisterEvent(event)
+	party:UnregisterEvent(event)
 		local function UpdatePosition(party)
 			party:ClearAllPoints()
 			party:SetPoint(unpack(cfg.group.position))
@@ -171,4 +171,7 @@ oUF:Factory(function(self)
 		party:SetScript('OnEvent', UpdatePosition)
 	end)
 	party:RegisterEvent('PLAYER_ENTERING_WORLD')
+]]
+	self:Spawn('party'):SetPoint(unpack(cfg.group.position))
+	self:Spawn('raid'):SetPoint(unpack(cfg.group.position))
 end)
