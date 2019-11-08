@@ -1,8 +1,8 @@
+1. Get the group frames to spawn and not fire off errors in combat
 2. Add threat/target highlighting
 3. Add debuffs to group frames
 4. Add relevant plugin support that actually works fairly well
-5. Figure out why /otest doesn't work (I don't particularly care much about it)
-6. Figure out a border for when !Beautycase isn't enabled
+5. Figure out a more proper border for when !Beautycase isn't enabled
 
-X. Eternaly test
+X. Eternaly/Eternally test
 X. Delete this file when addon declared stable

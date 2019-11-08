@@ -11,7 +11,7 @@ cfg.castbar_color = { 255/255, 255/255, 0/255 } --Color the castbars
 cfg.bColor = { 0, 0, 0, .5 } --This adjusts the backround color/alpha
 
 cfg.Auras = {
-	onlyShowPlayer = true, --show only auras player has applied
+	onlyShowPlayer = false, --show only auras player has applied
 	disableCooldown = false, --disable the cooldown pie
 	showStealableAuras = true, --show if a buff is stealable
 	gap = true, --this will put a 1 icon gap between buffs and debuffs
@@ -40,7 +40,7 @@ cfg.target = {
 	position = { 'CENTER', 200, -200 },
 	width = 150,
 	height = 60,
-	castbar_pos = { 'BOTTOM', 0, -3 },
+	castbar_pos = { 'BOTTOM', 0, -3 }, -- alternatively you can use:{ 'CENTER', UIParent, 0, 0 }
 	cast_width = 150,
 	cast_height = 15,
 	portrait = true,

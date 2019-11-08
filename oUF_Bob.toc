@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 11302
 ## Title: oUF: Bob
 ## Author: 10leej
 ## Version: 1.2
