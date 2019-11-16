@@ -47,7 +47,7 @@ cfg.target = {
 	auras = true,
 }
 cfg.tot = {  --Target of Target
-	position = { 'CENTER', 385, -200 },
+	position = { 'CENTER', 393, -200 },
 	width = 100,
 	height = 60,
 }
