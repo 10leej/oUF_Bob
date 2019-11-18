@@ -149,19 +149,6 @@ oUF:Factory(function(self)
         'showSolo', true,
         'showPlayer', true,
         'showParty', true,
-        'yOffset', -1,
-        'groupFilter', '1,2,3,4,5,6,7,8',
-        'groupBy', cfg.group.groupBy,
-        'groupingOrder', cfg.group.groupingOrder,
-        'maxColumns', cfg.group.maxColumns,
-        'unitsPerColumn', cfg.group.unitsPerColumn,
-        'columnSpacing', 1,
-        'point', cfg.group.point,
-        'startingIndex',1,
-        'columnAnchorPoint', cfg.group.columnAnchor, 
-		'oUF-initialConfigFunction', ([[
-			self:SetHeight(%d)
-			self:SetWidth(%d)
-		]]):format(cfg.group.height, cfg.group.width)
+        'yOffset', -1
 	):SetPoint(unpack(cfg.group.position))
 end)
