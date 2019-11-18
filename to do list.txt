@@ -1,4 +1,4 @@
-1. Get the group frames to spawn and not fire off errors in combat
+1. Get the group frames to spawn and not fire off errors in combat --looks like we did it
 2. Add threat/target highlighting
 3. Add debuffs to group frames
 4. Add relevant plugin support that actually works fairly well
