@@ -13,5 +13,5 @@ embeds\oUF_PetHappiness.lua
 embeds\oUF_SpellRange.lua
 embeds\oUF_Swing.lua
 modules\group.lua
-modules\test.lua
+modules\nameplates.lua
 modules\units.lua
