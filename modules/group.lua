@@ -146,7 +146,7 @@ oUF:Factory(function(self)
 	self:SetActiveStyle'BobGroup'
 	local party = self:SpawnHeader(nil, nil, 'raid,party,solo',
        'showRaid', true,
-        'showSolo', false,
+        'showSolo', true,
         'showPlayer', true,
         'showParty', true,
         'yOffset', -1,
@@ -158,18 +158,10 @@ oUF:Factory(function(self)
         'columnSpacing', 1,
         'point', cfg.group.point,
         'startingIndex',1,
-        'columnAnchorPoint', cfg.group.columnAnchor
-	)
-
-	party:SetScript("OnEvent", function(self, event, unit)
-	party:UnregisterEvent(event)
-		local function UpdatePosition(party)
-			party:ClearAllPoints()
-			party:SetPoint(unpack(cfg.group.position))
-		end
-		UpdatePosition(party)
-		party:SetScript('OnEvent', UpdatePosition)
-	end)
-	party:RegisterEvent("PLAYER_LOGIN")
-	party:RegisterEvent('GROUP_ROSTER_UPDATE')
+        'columnAnchorPoint', cfg.group.columnAnchor, 
+		'oUF-initialConfigFunction', ([[
+			self:SetHeight(%d)
+			self:SetWidth(%d)
+		]]):format(cfg.group.height, cfg.group.width)
+	):SetPoint(unpack(cfg.group.position))
 end)
