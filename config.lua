@@ -56,7 +56,7 @@ cfg.tot = {  --Target of Target
 --Need to investigate these sometime, I do believe it is functional though
 cfg.group = { --Raid and Party share these settings
 	enable = true, --enable/disable the group frames
-	position = {'TOPLEFT', UIParent, 15, -50}, --position
+	position = {'TOPLEFT', UIParent, 17, -120}, --position
 	width = 60,
 	height = 45,
 	maxColumns = 8, --Columns are groups of units
