@@ -28,7 +28,7 @@ cfg.player = {
 	cast_width = 150,
 	cast_height = 15,
 	portrait = true,
-	auras = true,
+	auras = false,
 }
 cfg.pet = {
 	position = { 'CENTER', -200, -270 },
@@ -55,7 +55,7 @@ cfg.tot = {  --Target of Target
 --------------------------------------------
 --Need to investigate these sometime, I do believe it is functional though
 cfg.group = { --Raid and Party share these settings
-	enable = true, --enable/disable the group frames
+	enable = false, --enable/disable the group frames
 	position = {'TOPLEFT', UIParent, 17, -120}, --position
 	width = 60,
 	height = 45,
