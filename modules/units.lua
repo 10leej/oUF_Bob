@@ -235,6 +235,20 @@ local UnitSpecific = {
 			-- Register it with oUF
 			self.Reputation = Reputation
 		end
+			------------------------
+			-- Plugin: oUF_Swing --
+			------------------------
+			self.Swing = CreateFrame("Frame", nil, self)
+			self.Swing:SetWidth(100)
+			self.Swing:SetHeight(5)
+			self.Swing:SetPoint("BOTTOM", self, "TOP", 0, 2)
+			self.Swing.texture = cfg.statusbar_texture
+			self.Swing.color = {1, 0, 0, 0.8}
+			if isBeautiful then
+				self.Swing:CreateBeautyBorder(8)
+				self.Swing:SetBeautyBorderPadding(1)
+			end
+			
 	end, --end player
 	
 	pet = function(self)
@@ -253,6 +267,19 @@ local UnitSpecific = {
 		self.Castbar:SetPoint("TOP",self.Power,"BOTTOM",0,-2)
 		self.Castbar:SetSize(cfg.pet.width, cfg.pet.height/4)
 		--self.Auras:Hide()
+		
+		--Pet Happiness
+		-- Position and size
+		local PetHappiness = CreateFrame('Frame', nil, self)
+		PetHappiness:SetSize(14, 14)
+		if cfg.pet.portrait then
+			PetHappiness:SetPoint('TOPLEFT',self.Portrait,1,-1)
+		else
+			PetHappiness:SetPoint('TOPLEFT',self.Health,1,-1)
+		end
+
+		-- Register it with oUF
+		self.PetHappiness = PetHappiness
 	end,
 	target = function(self)
 		-- target specific stuff
@@ -488,7 +515,6 @@ local function Shared(self, unit, isSingle)
 	if(UnitSpecific[unit]) then
 		return UnitSpecific[unit](self)
 	end
-	
 end
  
 oUF:RegisterStyle('Bob', Shared)

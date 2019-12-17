@@ -5,10 +5,9 @@
 ## Notes: Fairly standard unitframes
 ## Dependencies: oUF
 ## OptionalDeps: !Beautycase
-## Credits: Phanx, MoonWitch, Haste, tukz
+## Credits: Phanx, MoonWitch, Haste, tukz, siweia
 
 config.lua
-embeds\oUF_DruidMana.lua
 embeds\oUF_PetHappiness.lua
 embeds\oUF_SpellRange.lua
 embeds\oUF_Swing.lua
